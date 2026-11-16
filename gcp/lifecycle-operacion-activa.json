@@ -1,0 +1,30 @@
+{
+  "lifecycle": {
+    "rule": [
+      {
+        "action": { "type": "SetStorageClass", "storageClass": "COLDLINE" },
+        "condition": { "daysSinceCustomTime": 1826, "matchesStorageClass": ["STANDARD"], "isLive": true }
+      },
+      {
+        "action": { "type": "SetStorageClass", "storageClass": "COLDLINE" },
+        "condition": { "age": 1826, "matchesStorageClass": ["STANDARD"], "isLive": true }
+      },
+      {
+        "action": { "type": "SetStorageClass", "storageClass": "ARCHIVE" },
+        "condition": { "daysSinceCustomTime": 2557, "matchesStorageClass": ["STANDARD", "COLDLINE"], "isLive": true }
+      },
+      {
+        "action": { "type": "SetStorageClass", "storageClass": "ARCHIVE" },
+        "condition": { "age": 2557, "matchesStorageClass": ["STANDARD", "COLDLINE"], "isLive": true }
+      },
+      {
+        "action": { "type": "SetStorageClass", "storageClass": "COLDLINE" },
+        "condition": { "daysSinceNoncurrentTime": 30, "matchesStorageClass": ["STANDARD"], "isLive": false }
+      },
+      {
+        "action": { "type": "Delete" },
+        "condition": { "daysSinceNoncurrentTime": 1826, "isLive": false }
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+# Repository is public: keep client inventory data out of Git. Delete this file once the repo is private.
+*.csv
+*.tsv
+*.log
