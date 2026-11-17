@@ -6,6 +6,7 @@ Single source of truth for migrating the AGACE Matamoros file server (C:, D:\Inf
 |---|---|
 | `docs/AGACE_GCP_Migration_Runbook_EN.md` | Implementation runbook (English) |
 | `docs/AGACE_Runbook_Migracion_GCP_ES-MX.md` | Runbook en español (MX), with the approval block |
+| `docs/GCP_Setup_Guide_EN.md` | Step-by-step Google Cloud setup (Gate G0), before any copy |
 | `Decisions.md` | Open assumptions A1–A8, with owner and deadline |
 | `scripts/` | PowerShell scripts 00–10 (source server + GCP VM) |
 | `gcp/lifecycle-operacion-activa.json` | Cloud Storage lifecycle rules for the Hot bucket |

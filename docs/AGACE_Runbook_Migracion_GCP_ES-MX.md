@@ -557,6 +557,10 @@ gcloud services enable compute.googleapis.com storage.googleapis.com
 gcloud compute networks create agace-vpc --subnet-mode=custom
 gcloud compute networks subnets create agace-subnet-mx --network=agace-vpc --region=$REGION \
   --range=10.50.0.0/24 --enable-private-ip-google-access
+# Salida a internet sin IP pública (Windows Update, descarga de PowerShell 7)
+gcloud compute routers create agace-router --network=agace-vpc --region=$REGION
+gcloud compute routers nats create agace-nat --router=agace-router --region=$REGION \
+  --nat-all-subnet-ip-ranges --auto-allocate-nat-external-ips
 # HA VPN (2 túneles + Cloud Router/BGP) hacia el firewall de Matamoros según la guía de Cloud VPN.
 # En el firewall local: TCP MSS clamping a 1360 (evita fragmentación IPsec, que arruina el rendimiento SMB).
 gcloud compute firewall-rules create agace-allow-smb-onprem --network=agace-vpc --direction=INGRESS \
@@ -564,8 +568,8 @@ gcloud compute firewall-rules create agace-allow-smb-onprem --network=agace-vpc 
 gcloud compute firewall-rules create agace-allow-iap-rdp --network=agace-vpc --direction=INGRESS \
   --action=ALLOW --rules=tcp:3389 --source-ranges=35.235.240.0/20 --target-tags=agace-fs
 gcloud iam service-accounts create sa-agace-fs --display-name="AGACE file server VM"
-gcloud compute machine-types list --zones=$ZONE --filter="name=n2-standard-8"   # confirmar disponibilidad
-gcloud compute instances create agace-gcp-fs01 --zone=$ZONE --machine-type=n2-standard-8 \
+gcloud compute machine-types list --zones=$ZONE --filter="name=e2-standard-8"   # confirmar disponibilidad (N2 no existe en northamerica-south1)
+gcloud compute instances create agace-gcp-fs01 --zone=$ZONE --machine-type=e2-standard-8 \
   --image-family=windows-2022 --image-project=windows-cloud --boot-disk-size=200GB --boot-disk-type=pd-balanced \
   --network-interface=subnet=agace-subnet-mx,private-network-ip=10.50.0.10,no-address \
   --tags=agace-fs --service-account=sa-agace-fs@$PROJECT.iam.gserviceaccount.com --scopes=cloud-platform \
@@ -1201,8 +1205,15 @@ gcloud storage cp --recursive "gs://agace-archivo-historico-2012-2020/W_Sistemas
 | Disco VM `agace-hot` (pd-balanced) | 5,200 GB | US$0.10 | ≈ US$520 |
 | Bucket activa (Standard) | 4,000 GB | US$0.020 | ≈ US$80 |
 | Bucket histórico (Archive) | 7,000 GB | US$0.0012 | ≈ US$8 |
+| VM `e2-standard-8`, 24/7 (cómputo) | 8 vCPU | – | ≈ US$213 |
+| Licencia de Windows Server (por vCPU-hora) | 8 vCPU | – | ≈ US$269 |
+| Disco de arranque (pd-balanced) | 200 GB | US$0.109 | ≈ US$22 |
+| Snapshots diarios de `agace-hot`, 14 días (depende del cambio diario) | ≈ 4.6 TB usados | – | ≈ US$230–300 |
+| Túnel Classic VPN + IP, Cloud NAT | – | – | ≈ US$45 |
 | *Comparación: los mismos 7 TB Fríos en pd-balanced* | 7,000 GB | US$0.10 | *≈ US$700* |
 | `agace-cold-staging` temporal (pd-standard), hasta la Compuerta A | 8,000 GB | US$0.04 | ≈ US$320, prorrateado |
+
+Con la VM, la licencia, los snapshots y la VPN, el total es de aprox. US$1,840–1,920/mes durante la migración y US$1,520–1,600 después de la Compuerta A (precios de lista; ver `docs/GCP_Setup_Guide_EN.md` M.1 para opciones de ahorro).
 
 La mayor parte del ahorro viene de no mantener los datos Fríos en discos de VM. Optimizar la clase de GCS es un efecto secundario.
 
